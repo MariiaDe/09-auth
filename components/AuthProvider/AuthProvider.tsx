@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { checkSession, logout } from "@/lib/api/clientApi";
+import { checkSession, getMe, logout } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 
 const PRIVATE_PREFIXES = ["/notes", "/profile"];
 
 function isPrivatePath(pathname: string) {
-  return PRIVATE_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  return PRIVATE_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
 }
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -28,24 +30,28 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setLoading(true);
 
       try {
-        const user = await checkSession(); 
+        
+        const sessionUser = await checkSession();
         if (cancelled) return;
 
-        if (user) {
-          setUser(user);
-          setLoading(false);
+        if (sessionUser) {
+          
+          const me = await getMe();
+          if (cancelled) return;
+
+          setUser(me);
           return;
         }
 
         
         clearIsAuthenticated();
 
+       
         if (isPrivatePath(pathname)) {
-          
           try {
             await logout();
           } catch {
-            
+          
           }
           if (!cancelled) router.replace("/sign-in");
         }
@@ -55,6 +61,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
 
     run();
+
     return () => {
       cancelled = true;
     };

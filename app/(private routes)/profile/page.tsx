@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import css from "./page.module.css";
+import { getMe } from "@/lib/api/serverApi";
+
+const SITE_URL = "https://notehub.app";
+const OG_IMAGE = "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg";
 
 export const metadata: Metadata = {
   title: "Profile | NoteHub",
@@ -9,14 +13,18 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Profile | NoteHub",
     description: "User profile page in NoteHub application",
-    url: "/profile",
-    images: [
-      { url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg" },
-    ],
+    url: `${SITE_URL}/profile`,
+    images: [{ url: OG_IMAGE }],
   },
 };
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const user = await getMe();
+
+  const avatarSrc = user.avatar || "https://ac.goit.global/fullstack/react/avatar.png";
+  const username = user.username || "User";
+  const email = user.email;
+
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
@@ -30,7 +38,7 @@ export default function ProfilePage() {
 
         <div className={css.avatarWrapper}>
           <Image
-            src="https://ac.goit.global/fullstack/react/avatar.png"
+            src={avatarSrc}
             alt="User Avatar"
             width={120}
             height={120}
@@ -39,8 +47,8 @@ export default function ProfilePage() {
         </div>
 
         <div className={css.profileInfo}>
-          <p>Username: your_username</p>
-          <p>Email: your_email@example.com</p>
+          <p>Username: {username}</p>
+          <p>Email: {email}</p>
         </div>
       </div>
     </main>

@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import css from "./page.module.css";
 import { register } from "@/lib/api/clientApi";
+import { useAuthStore } from "@/lib/store/authStore";
 
 export default function SignUpPage() {
   const router = useRouter();
+
+  const setUser = useAuthStore((s) => s.setUser);
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,9 +24,14 @@ export default function SignUpPage() {
 
     try {
       setIsLoading(true);
-      await register({ email, password });
-      router.push("/profile"); 
-    } catch (err) {
+
+      const user = await register({ email, password });
+
+      
+      setUser(user);
+
+      router.push("/profile");
+    } catch {
       setError("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);

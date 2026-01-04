@@ -1,0 +1,14 @@
+.layout {
+  display: flex;
+  gap: 24px;
+}
+
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}

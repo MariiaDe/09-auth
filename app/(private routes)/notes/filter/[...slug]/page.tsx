@@ -1,35 +1,9 @@
-import type { Metadata } from "next";
 import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api/notes";
+import { fetchNotes } from "@/lib/api/serverApi";
 import NotesClient from "./Notes.client";
 import type { Note } from "@/types/note";
 
 const PER_PAGE = 12;
-
-const TAG_TITLES: Record<string, string> = {
-  all: "All notes",
-  todo: "Todo",
-  work: "Work",
-  personal: "Personal",
-  meeting: "Meeting",
-  shopping: "Shopping",
-};
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug?: string[] }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const raw = slug?.[0] ?? "all";
-
-  const tagTitle = TAG_TITLES[raw] ?? raw;
-
-  return {
-    title: `NoteHub | ${tagTitle}`,
-    description: `Notes filtered by: ${tagTitle}`,
-  };
-}
 
 export default async function NotesByTagPage({
   params,
@@ -46,8 +20,15 @@ export default async function NotesByTagPage({
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: ["notes", 1, "", selectedTag ?? "all"],
-    queryFn: () => fetchNotes(1, PER_PAGE, "", selectedTag),
+    queryKey: ["notes", 1, "", raw],
+    queryFn: () =>
+      fetchNotes({
+        page: 1,
+        perPage: PER_PAGE,
+        search: "",
+        tag: raw === "all" ? undefined : selectedTag,
+
+      }),
   });
 
   return (
